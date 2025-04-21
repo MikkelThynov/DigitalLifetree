@@ -95,6 +95,8 @@
         loader.style.display = state ? "block" : "none";
       }
 
+      
+
       function saveOrder() {
         const order = [...preview.children].map((div) => div.dataset.path);
         localStorage.setItem(`order_${bladId}`, JSON.stringify(order));
@@ -226,82 +228,114 @@ function openEditModal(url, type, path, container) {
     document.body.removeChild(modal);
   };
 
-  if (type.startsWith("image/") || type.startsWith("video/") || type.startsWith("audio/")) {
+  if (type.startsWith("image/") || type.startsWith("video/")) {
     const fileInput = document.createElement("input");
     fileInput.type = "file";
-    fileInput.accept = type.startsWith("image/")
-      ? "image/*"
-      : type.startsWith("video/")
-      ? "video/*"
-      : "audio/*";
+    fileInput.accept = type.startsWith("image/") ? "image/*" : "video/*";
 
     const saveBtn = document.createElement("button");
     saveBtn.textContent = "Vælg ny fil";
     saveBtn.onclick = async () => {
-  fileInput.click(); // Åbn filupload-dialog
-  fileInput.onchange = async () => {
-    const file = fileInput.files[0];
-    if (file) {
-      const newPath = `blad-${bladId}/${file.name}`;
-      
-      // Upload den nye fil til Supabase
-      const { error: uploadError } = await supabase.storage
-        .from("lifetree")
-        .upload(newPath, file, { upsert: true });
-      if (uploadError) {
-        console.error("Upload-fejl:", uploadError);
-        return;
+      const file = fileInput.files[0];
+      if (file) {
+        const newPath = `blad-${bladId}/${file.name}`;
+        const { error } = await supabase.storage
+          .from("lifetree")
+          .upload(newPath, file, { upsert: true });
+        if (error) {
+          console.error("Upload-fejl:", error);
+          return;
+        }
+
+        const { data, error: urlError } = supabase.storage
+          .from("lifetree")
+          .getPublicUrl(newPath);
+        if (urlError) {
+          console.error("Fejl ved hentning af URL:", urlError);
+          return;
+        }
+
+        // Opdater elementet
+        if (type.startsWith("image/")) {
+          container.querySelector("img").src = data.publicUrl;
+        } else if (type.startsWith("video/")) {
+          container.querySelector("video").src = data.publicUrl;
+        }
+
+        // Fjern den gamle fil
+        const { error: deleteError } = await supabase.storage
+          .from("lifetree")
+          .remove([path]);
+        if (deleteError) console.error("Sletningsfejl:", deleteError);
+
+        document.body.removeChild(modal);
+        saveOrder();
       }
-
-      // Hent den nye fil-URL
-      const { data, error: urlError } = supabase.storage
-        .from("lifetree")
-        .getPublicUrl(newPath);
-      if (urlError) {
-        console.error("Fejl ved hentning af URL:", urlError);
-        return;
-      }
-
-      // Opdater grid-elementet med den nye fil
-      if (type.startsWith("image/")) {
-        container.querySelector("img").src = data.publicUrl;
-      } else if (type.startsWith("video/")) {
-        container.querySelector("video").src = data.publicUrl;
-      } else if (type.startsWith("audio/")) {
-        container.querySelector("audio").src = data.publicUrl;
-      }
-
-      // Fjern den gamle fil fra Supabase
-      const { error: deleteError } = await supabase.storage
-        .from("lifetree")
-        .remove([path]);
-      if (deleteError) {
-        console.error("Sletningsfejl:", deleteError);
-      }
-
-      // Opdater grid-elementets data-path til den nye fil
-      container.dataset.path = newPath;
-
-      // Fjern modal og gem rækkefølgen
-      document.body.removeChild(modal);
-      saveOrder();
-    }
-  };
-};
+    };
 
     modal.appendChild(fileInput);
     modal.appendChild(saveBtn);
-  } else if (type === "text") {
-    alert("Redigering af tekst understøttes allerede via direkte redigering.");
+  } else if (type.startsWith("audio/")) {
+    alert("Redigering af lyd understøttes ikke endnu.");
   } else {
-    alert("Denne medietype understøttes ikke.");
+    const titleInput = document.createElement("input");
+    titleInput.value = container.querySelector("h4")?.textContent || "";
+    const textInput = document.createElement("textarea");
+    textInput.value = container.querySelector("p")?.textContent || "";
+
+    const saveBtn = document.createElement("button");
+    saveBtn.textContent = "Gem";
+    saveBtn.onclick = async () => {
+      const newTitle = titleInput.value.trim();
+      const newText = textInput.value.trim();
+
+      if (newTitle || newText) {
+        const newPath = `blad-${bladId}/text-${Date.now()}.json`;
+        await uploadTextToSupabase(newTitle, newText, newPath);
+
+        // Opdater kortet
+        const titleElement = container.querySelector("h4");
+        const textElement = container.querySelector("p");
+
+        if (newTitle) {
+          if (titleElement) {
+            titleElement.textContent = newTitle;
+          } else {
+            const newTitleElement = document.createElement("h4");
+            newTitleElement.textContent = newTitle;
+            container.insertBefore(newTitleElement, textElement);
+          }
+        }
+
+        if (newText) {
+          if (textElement) {
+            textElement.textContent = newText;
+          } else {
+            const newTextElement = document.createElement("p");
+            newTextElement.textContent = newText;
+            container.appendChild(newTextElement);
+          }
+        }
+
+        // Fjern den gamle fil
+        const { error: deleteError } = await supabase.storage
+          .from("lifetree")
+          .remove([path]);
+        if (deleteError) console.error("Sletningsfejl:", deleteError);
+
+        document.body.removeChild(modal);
+        saveOrder();
+      }
+    };
+
+    modal.appendChild(titleInput);
+    modal.appendChild(textInput);
+    modal.appendChild(saveBtn);
   }
 
   modal.appendChild(closeModalBtn);
   document.body.appendChild(modal);
 }
-
-
 
       document.getElementById("uploadImage").onclick = () => {
         document.getElementById("fileInput").accept = "image/*";

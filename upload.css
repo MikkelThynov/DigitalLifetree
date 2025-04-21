@@ -356,7 +356,7 @@ audio {
   background-color: #888; /* Hover-effekt */
 }
 
-[contenteditable="true"] {
+/*[contenteditable="true"] {
   border: 1px dashed #ccc;
   padding: 0.5rem;
   border-radius: 4px;
@@ -366,3 +366,4 @@ audio {
   border-color: #007bff;
   background-color: #f0f8ff;
 }
+*/

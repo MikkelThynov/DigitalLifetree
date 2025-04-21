@@ -4,7 +4,7 @@
 body {
   margin: 0;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background: url("/Images/lifetree7.png") no-repeat center center/cover;
+  background: url("./Images/lifetree7.png") no-repeat center center/cover;
   background-attachment: fixed;
   color: #ededed;
   min-height: 100vh;
@@ -95,6 +95,7 @@ p {
     align-items: center;
     background: #1e1e1e;
   }
+
   .overlay {
     align-items: center;
     text-align: center;
