@@ -69,14 +69,6 @@ p {
   margin: 2rem auto 1rem;
   max-width: 400px;
 }
-.mobile-buttons {
-  display: none;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.75rem;
-  max-width: 400px;
-  margin: 1rem auto;
-}
 
 @keyframes fadeIn {
   from {
@@ -89,35 +81,101 @@ p {
   }
 }
 
-@media (max-width: 768px) {
-  body {
-    padding: 2rem 1rem;
-    align-items: center;
-    background: #1e1e1e;
-  }
+/* Responsive Styles */
 
+@media (max-width: 768px) {
   .overlay {
     align-items: center;
     text-align: center;
     max-width: 100%;
-    order: 2;
+    margin: 0 auto;
   }
-  h1 {
-    font-size: 2.2rem;
+
+  .mobile-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-top: 1rem;
+    width: 100%;
+    justify-items: center;
   }
-  p {
-    font-size: 1rem;
-  }
+
   .blad-button {
+    position: static;
+    display: block;
+    text-align: center;
+    padding: 0.5rem 1rem;
+    background-color: white;
+    color: #1d1d1d;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 120px;
+  }
+
+  .blad-button:hover {
+    background-color: #e8e4dd;
+  }
+
+  body > .blad-button {
     display: none;
   }
-  .tree-illustration {
-    display: block;
-    order: 1;
+}
+@media (max-width: 768px) {
+  .overlay {
+    align-items: center;
+    text-align: center;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 1rem; /* Tilføj lidt indre afstand */
+    background-color: #a89783ab;
   }
+
   .mobile-buttons {
+    display: grid;
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(100px, 1fr)
+    ); /* Dynamisk tilpasning */
+    gap: 1rem; /* Mellemrum mellem knapperne */
+    margin-top: 1rem;
+    width: 100%;
+    justify-content: center; /* Centrerer grid-indholdet */
+    align-items: center; /* Justerer lodret */
+  }
+
+  .blad-button {
     display: flex;
-    flex-wrap: wrap;
-    order: 3;
+    justify-content: center; /* Centrerer tekst i knappen */
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background-color: white;
+    color: #1d1d1d;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 100%; /* Sørg for, at knappen fylder sin grid-celle */
+    max-width: 120px; /* Begræns knappernes bredde */
+    transform: none;
+  }
+
+  .blad-button:hover {
+    background-color: #e8e4dd;
+  }
+
+  /* Skjul absolut-positionerede knapper i mobiltilstand */
+  body > .blad-button {
+    display: none;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-buttons {
+    display: none; /* Skjul mobile knapper */
   }
 }

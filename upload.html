@@ -95,7 +95,12 @@
         loader.style.display = state ? "block" : "none";
       }
 
-      
+      function toggleTextInput(show) {
+  const textInputContainer = document.getElementById("textInputContainer");
+  if (textInputContainer) {
+    textInputContainer.style.display = show ? "block" : "none";
+  }
+}
 
       function saveOrder() {
         const order = [...preview.children].map((div) => div.dataset.path);
