@@ -367,3 +367,20 @@ audio {
   background-color: #f0f8ff;
 }
 */
+
+@media (max-width: 768px) {
+  .modal-grid {
+    display: flex;
+    flex-direction: column; /* Placer knapperne i en lodret kolonne */
+    align-items: center; /* Centrerer knapperne horisontalt */
+    justify-content: center; /* Centrerer knapperne vertikalt */
+    gap: 1rem; /* Tilføj mellemrum mellem knapperne */
+    height: 100%; /* Sørg for, at grid fylder modalens højde */
+    padding-top: 5px;
+  }
+
+  .modal-grid button {
+    width: 50%; /* Gør knapperne bredere for bedre mobilvisning */
+    max-width: 300px; /* Begræns knappernes maksimale bredde */
+  }
+}

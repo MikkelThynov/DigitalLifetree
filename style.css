@@ -125,13 +125,18 @@ p {
   }
 }
 @media (max-width: 768px) {
+  body {
+    padding: 2rem;
+  }
+
   .overlay {
     align-items: center;
     text-align: center;
-    max-width: 100%;
+    width: 100%; /* Tilføj en bredde, der kan styres */
+    max-width: 400px; /* Begræns den maksimale bredde */
     margin: 0 auto;
     padding: 1rem; /* Tilføj lidt indre afstand */
-    background-color: #a89783ab;
+    background-color: #a49079cf;
   }
 
   .mobile-buttons {
@@ -166,6 +171,7 @@ p {
 
   .blad-button:hover {
     background-color: #e8e4dd;
+    transform: none;
   }
 
   /* Skjul absolut-positionerede knapper i mobiltilstand */

@@ -39,6 +39,7 @@
           <button id="uploadVideo">Video</button>
           <button id="uploadAudio">Lydfil</button>
           <button id="recordAudio">Optag lyd</button>
+          <button id="uploadAllFiles">Alle filer</button>
           <button id="writeText">Tekst</button>
         </div>
         <div id="textInputContainer">
@@ -372,6 +373,13 @@ function openEditModal(url, type, path, container) {
         toggleTextInput(true);
       };
 
+      document.getElementById("uploadAllFiles").onclick = () => {
+  document.getElementById("fileInput").accept = "*/*"; // Tillad alle filtyper
+  document.getElementById("fileInput").click();
+  modal.style.display = "none";
+  toggleTextInput(false);
+};
+
       async function uploadTextToSupabase(title, text, path) {
   const { error } = await supabase.storage
     .from("lifetree")
@@ -601,6 +609,21 @@ document.getElementById("saveText").onclick = async () => {
       });
 
       loadExistingMedia();
+
+      document.addEventListener("DOMContentLoaded", () => {
+  const isMobile = window.matchMedia("(max-width: 768px)").matches;
+
+  if (isMobile) {
+    // Skjul knapper, der ikke skal vises i mobilversionen
+    document.getElementById("uploadVideo").style.display = "none";
+    document.getElementById("uploadAudio").style.display = "none";
+    document.getElementById("recordAudio").style.display = "none";
+    document.getElementById("uploadImage").style.display = "none";
+  } else {
+    // Skjul knapper, der ikke skal vises i desktopversionen
+    document.getElementById("uploadAllFiles").style.display = "none";
+  }
+});
     </script>
   </body>
 </html>
