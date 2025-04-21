@@ -6,62 +6,6 @@
     <title>Upload Medier - Mit Digitale Livstræ</title>
     <link rel="stylesheet" href="upload.css" />
     <script type="module" src="supabase.js"></script>
-    <style>
-      /* Skjul tekstfelt og knapper som standard */
-      #textInputContainer {
-        display: none;
-        margin-top: 2rem; /* Mere spacing fra de øvrige knapper */
-        text-align: center; /* Centrering af indhold */
-      }
-      #textInput {
-        width: 90%; /* Sørg for, at tekstfeltet passer i pop-up-vinduet */
-        height: 120px; /* Juster højden for bedre læsbarhed */
-        margin-bottom: 1rem; /* Mere spacing til knapperne */
-        padding: 0.5rem;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        box-sizing: border-box;
-      }
-      .text-buttons {
-        display: flex;
-        justify-content: center; /* Centrering af knapper */
-        gap: 1rem; /* Mere spacing mellem knapperne */
-      }
-      .modal {
-        display: none;
-        position: fixed;
-        z-index: 1;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0, 0, 0, 0.4);
-      }
-      .modal-content {
-        background-color: #fefefe;
-        margin: 10% auto;
-        padding: 20px;
-        border: 1px solid #888;
-        width: 80%;
-        max-width: 500px;
-        border-radius: 8px;
-        box-sizing: border-box;
-      }
-      .close {
-        color: #aaa;
-        float: right;
-        font-size: 28px;
-        font-weight: bold;
-        cursor: pointer;
-      }
-      .close:hover,
-      .close:focus {
-        color: black;
-        text-decoration: none;
-        cursor: pointer;
-      }
-    </style>
   </head>
   <body>
     <header>
@@ -98,6 +42,8 @@
           <button id="writeText">Tekst</button>
         </div>
         <div id="textInputContainer">
+          <h3>Du kan tilføje din egen tekst her</h3>
+          <input id="textInputTitle" placeholder="Skriv en titel"></input>
           <textarea
             id="textInput"
             placeholder="Skriv en tekst og klik på 'Gem' eller 'Annuller'..."
@@ -154,47 +100,208 @@
         localStorage.setItem(`order_${bladId}`, JSON.stringify(order));
       }
 
-      function toggleTextInput(show) {
-        const textInputContainer =
-          document.getElementById("textInputContainer");
-        textInputContainer.style.display = show ? "block" : "none";
-      }
-
       function createMediaCard(url, type, path) {
-        const container = document.createElement("div");
-        container.setAttribute("draggable", "true");
-        container.dataset.path = path;
+  console.log("Creating MediaCard:", { url, type, path }); // Debugging
 
-        let element;
-        if (type.startsWith("image/")) {
-          element = document.createElement("img");
-          element.src = url;
-        } else if (type.startsWith("video/")) {
-          element = document.createElement("video");
-          element.src = url;
-          element.controls = true;
-        } else if (type.startsWith("audio/")) {
-          element = document.createElement("audio");
-          element.src = url;
-          element.controls = true;
-        }
+  const container = document.createElement("div");
+  container.setAttribute("draggable", "true");
+  container.dataset.path = path;
 
-        const removeBtn = document.createElement("button");
-        removeBtn.className = "remove-btn";
-        removeBtn.textContent = "×";
-        removeBtn.onclick = async () => {
-          preview.removeChild(container);
-          const { error: deleteError } = await supabase.storage
-            .from("lifetree")
-            .remove([path]);
-          if (deleteError) console.error("Sletningsfejl:", deleteError);
-          saveOrder();
-        };
+  let element;
+  if (type.startsWith("image/")) {
+    element = document.createElement("img");
+    element.src = url;
+    element.draggable = false;
+  } else if (type.startsWith("video/")) {
+    element = document.createElement("video");
+    element.src = url;
+    element.controls = true;
+    element.draggable = false;
+    element.style.maxWidth = "100%";
+  } else if (type.startsWith("audio/")) {
+    const title = document.createElement("h3");
+    title.textContent = "Lydfil"; // Eksempeltekst, kan ændres dynamisk
+    container.appendChild(title);
 
-        container.appendChild(removeBtn);
-        container.appendChild(element);
-        preview.appendChild(container);
+    const subtitle = document.createElement("p");
+    subtitle.textContent = "Afspil din fil her eller download den"; // Eksempeltekst
+    container.appendChild(subtitle);
+
+    element = document.createElement("audio");
+    element.src = url;
+    element.controls = true;
+    element.draggable = false;
+  } else if (type === "text") {
+    const titleElement = document.createElement("h4");
+    titleElement.contentEditable = true; // Gør redigerbar
+    titleElement.textContent = url.title || "Titel";
+    titleElement.style.marginBottom = "0.5rem";
+    titleElement.style.fontWeight = "bold";
+
+    const textElement = document.createElement("p");
+    textElement.contentEditable = true; // Gør redigerbar
+    textElement.textContent = url.text || "Tekstindhold";
+
+    const saveTextBtn = document.createElement("button");
+    saveTextBtn.textContent = "Gem ændringer";
+    saveTextBtn.onclick = async () => {
+      const newTitle = titleElement.textContent.trim();
+      const newText = textElement.textContent.trim();
+
+      const newPath = `blad-${bladId}/text-${Date.now()}.json`;
+      const { error } = await supabase.storage
+        .from("lifetree")
+        .upload(
+          newPath,
+          new Blob([JSON.stringify({ title: newTitle, text: newText })], {
+            type: "application/json",
+          }),
+          { upsert: true }
+        );
+      if (error) {
+        console.error("Fejl ved gemning af tekst:", error);
+        return;
       }
+
+      // Fjern den gamle fil
+      const { error: deleteError } = await supabase.storage
+        .from("lifetree")
+        .remove([path]);
+      if (deleteError) console.error("Sletningsfejl:", deleteError);
+
+      container.dataset.path = newPath;
+      alert("Ændringer gemt!");
+    };
+
+    container.appendChild(titleElement);
+    container.appendChild(textElement);
+    container.appendChild(saveTextBtn);
+    preview.appendChild(container);
+    return;
+  } else {
+    console.error("Unsupported media type:", type);
+    return; // Stop, hvis typen ikke understøttes
+  }
+
+  const removeBtn = document.createElement("button");
+  removeBtn.className = "remove-btn";
+  removeBtn.textContent = "×";
+  removeBtn.onclick = async () => {
+    preview.removeChild(container);
+    const { error: deleteError } = await supabase.storage
+      .from("lifetree")
+      .remove([path]);
+    if (deleteError) console.error("Sletningsfejl:", deleteError);
+    saveOrder();
+  };
+
+  const editBtn = document.createElement("button");
+  editBtn.className = "edit-btn";
+  editBtn.textContent = "✎";
+  editBtn.onclick = () => {
+    openEditModal(url, type, path, container);
+  };
+
+  container.appendChild(removeBtn);
+  container.appendChild(editBtn);
+  container.appendChild(element);
+  preview.appendChild(container);
+}
+
+function openEditModal(url, type, path, container) {
+  const modal = document.createElement("div");
+  modal.className = "edit-modal";
+  modal.style.position = "fixed";
+  modal.style.top = "50%";
+  modal.style.left = "50%";
+  modal.style.transform = "translate(-50%, -50%)";
+  modal.style.background = "#fff";
+  modal.style.padding = "1rem";
+  modal.style.boxShadow = "0 2px 6px rgba(0,0,0,0.2)";
+  modal.style.zIndex = "1000";
+
+  const closeModalBtn = document.createElement("button");
+  closeModalBtn.textContent = "Luk";
+  closeModalBtn.onclick = () => {
+    document.body.removeChild(modal);
+  };
+
+  if (type.startsWith("image/") || type.startsWith("video/") || type.startsWith("audio/")) {
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = type.startsWith("image/")
+      ? "image/*"
+      : type.startsWith("video/")
+      ? "video/*"
+      : "audio/*";
+
+    const saveBtn = document.createElement("button");
+    saveBtn.textContent = "Vælg ny fil";
+    saveBtn.onclick = async () => {
+  fileInput.click(); // Åbn filupload-dialog
+  fileInput.onchange = async () => {
+    const file = fileInput.files[0];
+    if (file) {
+      const newPath = `blad-${bladId}/${file.name}`;
+      
+      // Upload den nye fil til Supabase
+      const { error: uploadError } = await supabase.storage
+        .from("lifetree")
+        .upload(newPath, file, { upsert: true });
+      if (uploadError) {
+        console.error("Upload-fejl:", uploadError);
+        return;
+      }
+
+      // Hent den nye fil-URL
+      const { data, error: urlError } = supabase.storage
+        .from("lifetree")
+        .getPublicUrl(newPath);
+      if (urlError) {
+        console.error("Fejl ved hentning af URL:", urlError);
+        return;
+      }
+
+      // Opdater grid-elementet med den nye fil
+      if (type.startsWith("image/")) {
+        container.querySelector("img").src = data.publicUrl;
+      } else if (type.startsWith("video/")) {
+        container.querySelector("video").src = data.publicUrl;
+      } else if (type.startsWith("audio/")) {
+        container.querySelector("audio").src = data.publicUrl;
+      }
+
+      // Fjern den gamle fil fra Supabase
+      const { error: deleteError } = await supabase.storage
+        .from("lifetree")
+        .remove([path]);
+      if (deleteError) {
+        console.error("Sletningsfejl:", deleteError);
+      }
+
+      // Opdater grid-elementets data-path til den nye fil
+      container.dataset.path = newPath;
+
+      // Fjern modal og gem rækkefølgen
+      document.body.removeChild(modal);
+      saveOrder();
+    }
+  };
+};
+
+    modal.appendChild(fileInput);
+    modal.appendChild(saveBtn);
+  } else if (type === "text") {
+    alert("Redigering af tekst understøttes allerede via direkte redigering.");
+  } else {
+    alert("Denne medietype understøttes ikke.");
+  }
+
+  modal.appendChild(closeModalBtn);
+  document.body.appendChild(modal);
+}
+
+
 
       document.getElementById("uploadImage").onclick = () => {
         document.getElementById("fileInput").accept = "image/*";
@@ -226,23 +333,68 @@
         toggleTextInput(true);
       };
 
-      document.getElementById("saveText").onclick = () => {
-        const text = document.getElementById("textInput").value.trim();
-        if (text) {
-          const div = document.createElement("div");
-          div.className = "text-note";
-          div.textContent = text;
-          div.style.background = "#fff7e6";
-          div.style.padding = "1rem";
-          div.style.borderRadius = "8px";
-          div.style.boxShadow = "0 2px 6px rgba(0,0,0,0.05)";
-          div.style.maxWidth = "300px";
-          document.getElementById("preview").prepend(div);
-          document.getElementById("textInput").value = "";
-        }
-        modal.style.display = "none";
-        toggleTextInput(false);
-      };
+      async function uploadTextToSupabase(title, text, path) {
+  const { error } = await supabase.storage
+    .from("lifetree")
+    .upload(path, new Blob([JSON.stringify({ title, text })], { type: "application/json" }), { upsert: true });
+  if (error) console.error("Fejl ved upload af tekst:", error);
+}
+
+document.getElementById("saveText").onclick = async () => {
+  const title = document.getElementById("textInputTitle").value.trim();
+  const text = document.getElementById("textInput").value.trim();
+
+  if (title || text) {
+    const path = `blad-${bladId}/text-${Date.now()}.json`;
+
+    // Upload teksten til Supabase
+    await uploadTextToSupabase(title, text, path);
+
+    const div = document.createElement("div");
+    div.className = "text-note";
+    div.dataset.path = path;
+    div.style.background = "#fff7e6";
+    div.style.padding = "1rem";
+    div.style.borderRadius = "8px";
+    div.style.boxShadow = "0 2px 6px rgba(0,0,0,0.05)";
+    div.style.maxWidth = "300px";
+
+    if (title) {
+      const titleElement = document.createElement("h4");
+      titleElement.textContent = title;
+      titleElement.style.marginBottom = "0.5rem";
+      titleElement.style.fontWeight = "bold";
+      div.appendChild(titleElement);
+    }
+
+    if (text) {
+      const textElement = document.createElement("p");
+      textElement.textContent = text;
+      div.appendChild(textElement);
+    }
+
+    const removeBtn = document.createElement("button");
+    removeBtn.className = "remove-btn";
+    removeBtn.textContent = "×";
+    removeBtn.onclick = async () => {
+      preview.removeChild(div);
+      const { error: deleteError } = await supabase.storage
+        .from("lifetree")
+        .remove([path]);
+      if (deleteError) console.error("Sletningsfejl:", deleteError);
+      saveOrder();
+    };
+
+    div.appendChild(removeBtn);
+    document.getElementById("preview").prepend(div);
+
+    document.getElementById("textInputTitle").value = "";
+    document.getElementById("textInput").value = "";
+  }
+
+  modal.style.display = "none";
+  toggleTextInput(false);
+};
 
       document.getElementById("cancelText").onclick = () => {
         document.getElementById("textInput").value = "";
@@ -250,64 +402,129 @@
       };
 
       async function uploadAndPreview(file) {
-        showLoader(true);
-        const filePath = `blad-${bladId}/${file.name}`;
-        const { error } = await supabase.storage
-          .from("lifetree")
-          .upload(filePath, file, { upsert: true });
-        if (error) return console.error("Upload-fejl:", error);
+  showLoader(true);
+  const filePath = `blad-${bladId}/${file.name}`;
+  const { error } = await supabase.storage
+    .from("lifetree")
+    .upload(filePath, file, { upsert: true });
+  if (error) {
+    console.error("Upload-fejl:", error);
+    showLoader(false);
+    return;
+  }
 
-        const { data } = supabase.storage
-          .from("lifetree")
-          .getPublicUrl(filePath);
-        createMediaCard(data.publicUrl, file.type, filePath);
-        showLoader(false);
-        saveOrder();
-      }
+  const { data, error: urlError } = supabase.storage
+    .from("lifetree")
+    .getPublicUrl(filePath);
+  if (urlError) {
+    console.error("Fejl ved hentning af URL:", urlError);
+    showLoader(false);
+    return;
+  }
+
+  // Kontrollér filtypen og opret et MediaCard
+  if (file.type.startsWith("audio/")) {
+    createMediaCard(data.publicUrl, file.type, filePath);
+  } else if (file.type.startsWith("image/")) {
+    createMediaCard(data.publicUrl, file.type, filePath);
+  } else if (file.type.startsWith("video/")) {
+    createMediaCard(data.publicUrl, file.type, filePath);
+  }
+
+  showLoader(false);
+  saveOrder();
+}
 
       async function loadExistingMedia() {
-        const { data, error } = await supabase.storage
-          .from("lifetree")
-          .list(`blad-${bladId}`);
-        if (error) return console.error("Fejl ved hentning:", error);
+  const { data, error } = await supabase.storage
+    .from("lifetree")
+    .list(`blad-${bladId}`);
+  if (error) return console.error("Fejl ved hentning:", error);
 
-        const order = JSON.parse(
-          localStorage.getItem(`order_${bladId}`) || "[]"
-        );
-        const paths = data.map((item) => `blad-${bladId}/${item.name}`);
+  const order = JSON.parse(
+    localStorage.getItem(`order_${bladId}`) || "[]"
+  );
+  const paths = data.map((item) => `blad-${bladId}/${item.name}`);
 
-        const sorted = [...paths].sort(
-          (a, b) => order.indexOf(a) - order.indexOf(b)
-        );
+  const sorted = [...paths].sort(
+    (a, b) => order.indexOf(a) - order.indexOf(b)
+  );
 
-        for (const path of sorted) {
-          const name = path.split("/").pop();
-          const ext = name.split(".").pop().toLowerCase();
-          const mimeType =
-            ext === "mp4"
-              ? "video/mp4"
-              : ext === "mov"
-              ? "video/quicktime"
-              : ext === "m4v"
-              ? "video/x-m4v"
-              : ext === "heic"
-              ? "image/heic"
-              : ext === "heif"
-              ? "image/heif"
-              : ext === "jfif"
-              ? "image/jpeg"
-              : ext === "webm"
-              ? "video/webm"
-              : ext === "mp3"
-              ? "audio/mpeg"
-              : `image/${ext}`;
+  for (const path of sorted) {
+    const name = path.split("/").pop();
+    const ext = name.split(".").pop().toLowerCase();
 
-          const { data: urlData } = supabase.storage
-            .from("lifetree")
-            .getPublicUrl(path);
-          createMediaCard(urlData.publicUrl, mimeType, path);
-        }
+    if (ext === "json") {
+      // Håndter tekstfiler
+      const { data: fileData, error: fetchError } = await supabase.storage
+        .from("lifetree")
+        .download(path);
+      if (fetchError) {
+        console.error("Fejl ved hentning af tekst:", fetchError);
+        continue;
       }
+
+      const textContent = await fileData.text();
+      const { title, text } = JSON.parse(textContent);
+
+      const div = document.createElement("div");
+      div.className = "text-note";
+      div.dataset.path = path;
+      div.style.background = "#fff7e6";
+      div.style.padding = "1rem";
+      div.style.borderRadius = "8px";
+      div.style.boxShadow = "0 2px 6px rgba(0,0,0,0.05)";
+      div.style.maxWidth = "300px";
+
+      if (title) {
+        const titleElement = document.createElement("h4");
+        titleElement.textContent = title;
+        titleElement.style.marginBottom = "0.5rem";
+        titleElement.style.fontWeight = "bold";
+        div.appendChild(titleElement);
+      }
+
+      if (text) {
+        const textElement = document.createElement("p");
+        textElement.textContent = text;
+        div.appendChild(textElement);
+      }
+
+      const removeBtn = document.createElement("button");
+      removeBtn.className = "remove-btn";
+      removeBtn.textContent = "×";
+      removeBtn.onclick = async () => {
+        preview.removeChild(div);
+        const { error: deleteError } = await supabase.storage
+          .from("lifetree")
+          .remove([path]);
+        if (deleteError) console.error("Sletningsfejl:", deleteError);
+        saveOrder();
+      };
+
+      div.appendChild(removeBtn);
+      preview.appendChild(div);
+    } else if (["jpg", "jpeg", "png", "gif"].includes(ext)) {
+      // Håndter billedfiler
+      const { data: urlData } = supabase.storage
+        .from("lifetree")
+        .getPublicUrl(path);
+      createMediaCard(urlData.publicUrl, `image/${ext}`, path);
+    } else if (["mp4", "webm", "ogg", "mov"].includes(ext)) {
+      // Håndter videofiler
+      const { data: urlData } = supabase.storage
+        .from("lifetree")
+        .getPublicUrl(path);
+      createMediaCard(urlData.publicUrl, "video/mp4", path);
+    } else if (["mp3", "wav", "ogg"].includes(ext)) {
+  // Håndter lydfiler
+  const { data: urlData } = supabase.storage
+    .from("lifetree")
+    .getPublicUrl(path);
+  createMediaCard(urlData.publicUrl, `audio/${ext}`, path);
+}
+  }
+}
 
       input.addEventListener("change", () => {
         Array.from(input.files).forEach(uploadAndPreview);
