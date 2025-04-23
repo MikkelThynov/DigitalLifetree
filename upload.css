@@ -422,4 +422,9 @@ audio {
     padding: 0; /* Fjern ekstra padding */
     box-sizing: border-box; /* Inkluderer padding og border i dimensionerne */
   }
+
+  .remove-btn {
+    -webkit-appearance: none; /* Fjern standard iOS-styling */
+    appearance: none; /* Fjern standard browser-styling */
+  }
 }
