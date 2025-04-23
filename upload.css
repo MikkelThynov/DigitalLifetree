@@ -233,11 +233,11 @@ label[for="fileInput"]:hover {
 }*/
 
 .close {
-  display: inline-block; /* Sørg for, at knappen opfører sig som en inline-blok */
-  width: 32px; /* Fast bredde for at undgå oval form */
-  height: 32px; /* Fast højde for at undgå oval form */
-  line-height: 32px; /* Centrerer teksten vertikalt */
-  text-align: center; /* Centrerer teksten horisontalt */
+  display: flex; /* Brug flexbox til at centrere indholdet */
+  justify-content: center; /* Centrerer teksten horisontalt */
+  align-items: center; /* Centrerer teksten vertikalt */
+  width: 32px; /* Fast bredde */
+  height: 32px; /* Fast højde */
   border-radius: 50%; /* Gør knappen cirkulær */
   background-color: #f0f0f0; /* Baggrundsfarve */
   color: #333; /* Tekstfarve */
@@ -248,6 +248,7 @@ label[for="fileInput"]:hover {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Tilføj en let skygge */
   appearance: none; /* Fjern standard iOS-styling */
   -webkit-appearance: none; /* Fjern standard iOS-styling for Safari */
+  padding: 0; /* Fjern indre afstand */
 }
 
 .close:hover,
