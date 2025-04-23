@@ -397,10 +397,10 @@ audio {
   }
 
   .back-btn {
-    /*position: absolute;
-    left: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
+    position: absolute;
+    left: 1rem; /* Juster afstanden fra venstre */
+    top: 8rem; /* Flyt knappen til toppen */
+    transform: none; /* Fjern vertikal centrerings-oversættelse */
     background-color: #776756;
     color: white;
     border: none;
@@ -409,6 +409,15 @@ audio {
     font-size: 0.9rem;
     cursor: pointer;
     text-decoration: none;
-    transition: background-color 0.3s ease;*/
+    transition: background-color 0.3s ease;
+    z-index: 1000; /* Sørg for, at knappen altid er synlig */
+  }
+
+  .back-btn:hover {
+    background-color: #5e5243;
+  }
+
+  .header {
+    padding-top: 1rem; /* Mindre polstring på mobil */
   }
 }
