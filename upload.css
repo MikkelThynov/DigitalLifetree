@@ -253,8 +253,7 @@ label[for="fileInput"]:hover {
   box-sizing: border-box;
 }
 
-.close:hover,
-.close:focus {
+.close:hover {
   background-color: #ddd; /* Hover-effekt */
   color: #000; /* Ændrer tekstfarve ved hover */
 }
