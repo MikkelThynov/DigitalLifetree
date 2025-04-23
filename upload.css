@@ -249,6 +249,7 @@ label[for="fileInput"]:hover {
   appearance: none; /* Fjern standard iOS-styling */
   -webkit-appearance: none; /* Fjern standard iOS-styling for Safari */
   padding: 0; /* Fjern indre afstand */
+  box-sizing: border-box; /* Sørg for, at padding og border ikke påvirker størrelsen */
 }
 
 .close:hover,
@@ -393,5 +394,21 @@ audio {
   .modal-grid button {
     width: 50%; /* Gør knapperne bredere for bedre mobilvisning */
     max-width: 300px; /* Begræns knappernes maksimale bredde */
+  }
+
+  .back-btn {
+    /*position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: #776756;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.3s ease;*/
   }
 }
