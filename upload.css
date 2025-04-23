@@ -233,17 +233,27 @@ label[for="fileInput"]:hover {
 }*/
 
 .close {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-  cursor: pointer;
+  display: inline-block; /* Sørg for, at knappen opfører sig som en inline-blok */
+  width: 32px; /* Fast bredde for at undgå oval form */
+  height: 32px; /* Fast højde for at undgå oval form */
+  line-height: 32px; /* Centrerer teksten vertikalt */
+  text-align: center; /* Centrerer teksten horisontalt */
+  border-radius: 50%; /* Gør knappen cirkulær */
+  background-color: #f0f0f0; /* Baggrundsfarve */
+  color: #333; /* Tekstfarve */
+  font-size: 16px; /* Tekststørrelse */
+  font-weight: bold; /* Fed tekst */
+  border: none; /* Fjern standardkant */
+  cursor: pointer; /* Sørg for, at det ligner en knap */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Tilføj en let skygge */
+  appearance: none; /* Fjern standard iOS-styling */
+  -webkit-appearance: none; /* Fjern standard iOS-styling for Safari */
 }
 
 .close:hover,
 .close:focus {
-  color: black;
-  text-decoration: none;
+  background-color: #ddd; /* Hover-effekt */
+  color: #000; /* Ændrer tekstfarve ved hover */
 }
 
 /* Text input container */
